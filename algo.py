@@ -45,24 +45,31 @@ def login(userid, passwd, oauth):
 
 class kite:
 
+    # this is me calling a default const for kite
     def __init__(self,enctoken):
         self.headers = {"Authorization": f"enctoken {enctoken}"}
         self.session = requests.session()
         self.root_url = "https://api.kite.trade"
         self.response = self.session.get(self.root_url, headers=self.headers)
-        print(f"{GREEN}your connection is up and ready... {RESET}")
+        print(f"{GREEN}Your connection is up and ready... {RESET}")
         print(f"{RED}Response from the server --> {RESET}", self.response.text)
 
-    
+    def profile(self):
+        profile = self.session.get(f"{self.root_url}/user/profile", headers=self.headers).json()["data"]
+        return profile
+
     def margins(self):
         margins = self.session.get(f"{self.root_url}/user/margins", headers=self.headers).json()["data"]
         return margins
+
     def positions(self):
         positions = self.session.get(f"{self.root_url}/portfolio/positions", headers=self.headers).json()["data"]
         return positions
+
     def holdings(self):
         holdings = self.session.get(f"{self.root_url}/portfolio/holdings", headers=self.headers).json()["data"]
         return holdings
+
     def stockDump(self):
         stockDump = self.session.get(f"{self.root_url}/instruments", headers=self.headers)
         if stockDump.ok:
@@ -73,6 +80,10 @@ class kite:
         else:
             print("falied to get csv data")
 
+    def auctions(self):
+        auctions = self.session.get(f"{self.root_url}/portfolio/holdings/auctions", headers=self.headers).json()["data"]
+        return auctions
+
 def main():
     opt = input("Do you have enctoken? (y/n)")
     if opt == 'y':
@@ -82,16 +93,30 @@ def main():
         enctoken = login(userid, passwd, oauth)
     
     kiteapp = kite(enctoken = enctoken)
+
+    print(f"{GREEN}User_profile:{RESET}")
+    print(kiteapp.profile())
+
     print(f"{GREEN}Margins:{RESET}")
     print(kiteapp.margins())
+
     print(f"{GREEN}Positions:{RESET}")
     print(kiteapp.positions())
+
     print(f"{GREEN}Holdings:{RESET}")
     print(kiteapp.holdings())
+
     print(f"{GREEN}Historical data:{RESET}")
     kiteapp.stockDump()
+
+    print(f"{GREEN}Auctions:{RESET}")
+    print(kiteapp.auctions())
 
 
 if __name__ == "__main__":
     main()
+
+
+
+
 
