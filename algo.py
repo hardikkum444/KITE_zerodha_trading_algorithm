@@ -1,6 +1,7 @@
 import requests
 import getpass
 import csv
+import json
 
 GREEN = "\033[92m"
 RED = "\033[91m"
@@ -56,7 +57,8 @@ class kite:
 
     def profile(self):
         profile = self.session.get(f"{self.root_url}/user/profile", headers=self.headers).json()["data"]
-        return profile
+        final = json.dumps(profile)
+        return final
 
     def margins(self):
         margins = self.session.get(f"{self.root_url}/user/margins", headers=self.headers).json()["data"]
@@ -76,13 +78,36 @@ class kite:
             csv_data = stockDump.text
             with open('data.csv', 'w') as file:
                 file.write(csv_data)
-            print("csv dump of tradable stocks has been saved!")
+            print(f"{RED}csv dump of tradable stocks has been saved!{RESET}")
         else:
             print("falied to get csv data")
 
     def auctions(self):
         auctions = self.session.get(f"{self.root_url}/portfolio/holdings/auctions", headers=self.headers).json()["data"]
         return auctions
+
+    # orders
+    
+    # def place_order(self, variety, exchange, trading_symbol, transaction_type, quantity, product, order_type, price=None, validity=None, disclosed_quantity=None, trigger_price=None, squareoff=None, stoploss=None, trailing_stoploss=None, tag=None ):
+    #     req_parameters = locals()
+    #     del req_parameters["self"]
+    #     for k in list(req_parameters.keys()):
+    #         if req_parameters[k] is None:
+    #             del req_parameters[k]
+    #     order_id = self.session.post(f"{self.root_url}/orders/{variety}",data=req_parameters, headers=self.headers).json()["data"]["order_id"]
+
+    #     return order_id
+    def place_order(self, variety, exchange, tradingsymbol, transaction_type, quantity, product, order_type, price=None,
+                    validity=None, disclosed_quantity=None, trigger_price=None, squareoff=None, stoploss=None,
+                    trailing_stoploss=None, tag=None):
+        params = locals()
+        del params["self"]
+        for k in list(params.keys()):
+            if params[k] is None:
+                del params[k]
+        order_id = self.session.post(f"{self.root_url}/orders/{variety}",
+                                     data=params, headers=self.headers).json()["data"]["order_id"]
+        return order_id
 
 def main():
     opt = input("Do you have enctoken? (y/n)")
@@ -112,11 +137,25 @@ def main():
     print(f"{GREEN}Auctions:{RESET}")
     print(kiteapp.auctions())
 
+    print("placing order")
+
+    order = kiteapp.place_order(variety="amo",
+                         exchange="NSE",
+                         tradingsymbol="IDEA",
+                         transaction_type="BUY",
+                         quantity=1,
+                         product="NRML",
+                         order_type="MARKET",
+                         price=None,
+                         validity=None,
+                         disclosed_quantity=None,
+                         trigger_price=None,
+                         squareoff=None,
+                         stoploss=None,
+                         trailing_stoploss=None,
+                         tag="Hardiks_trade")
+    print(order)
+
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
